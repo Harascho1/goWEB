@@ -1,0 +1,9 @@
+### add product
+POST http://localhost:8080/api/v1/add-product
+content-type: application/json
+
+{
+	"name": "sok",
+	"price": 119.99,
+	"quantity": 100
+}

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Harascho1/goWEB/config"
 	"github.com/Harascho1/goWEB/service/auth"
 	"github.com/Harascho1/goWEB/types"
 	"github.com/Harascho1/goWEB/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -24,6 +26,40 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
+	var payload types.LoginUserPayload
+	err := utils.ParseJSON(r, &payload)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = utils.Validator.Struct(payload)
+	if err != nil {
+		error := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, error)
+		return
+	}
+
+	u, err := h.store.GetUserByEmail(payload.Email)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found invalid email or password"))
+		return
+	}
+
+	if !auth.ComparePassword(u.Password, []byte(payload.Password)) {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found invalid email or password"))
+		return
+	}
+
+	secret := []byte(config.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, u.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+
 }
 
 func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +67,13 @@ func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 	err := utils.ParseJSON(r, &payload)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = utils.Validator.Struct(payload)
+	if err != nil {
+		error := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, error)
 		return
 	}
 

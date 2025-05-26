@@ -1,0 +1,8 @@
+### login luka
+POST http://localhost:8080/api/v1/login
+HTTP/1.1 400 Bad Request
+
+# @_RES
+{"error":"not found invalid email or password"}
+
+# @_END
