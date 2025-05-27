@@ -1,4 +1,4 @@
-### add product
+### add product sok
 POST http://localhost:8080/api/v1/add-product
 content-type: application/json
 
@@ -6,4 +6,14 @@ content-type: application/json
 	"name": "sok",
 	"price": 119.99,
 	"quantity": 100
+}
+
+### add product milka
+POST http://localhost:8080/api/v1/add-product
+content-type: application/json
+
+{
+	"name": "milka",
+	"price": 319.99,
+	"quantity": 200
 }
