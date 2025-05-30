@@ -1,0 +1,2 @@
+FROM ALPINE
+COPY . /test
